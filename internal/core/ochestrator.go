@@ -1,1 +1,2 @@
-// Ties together excel & caldav
+// Package core ties together excel & caldav
+package core
