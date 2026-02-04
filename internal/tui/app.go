@@ -19,11 +19,11 @@ func Run() {
 
 	// Roster file
 	const DataDir string = "../data"
-	roster, err := getRosterFile(DataDir)
+	rosterFile, err := getRosterFile(DataDir)
 	if err != nil {
 		panic(err)
 	}
-	rosterAbsPath, err := filepath.Abs(roster)
+	rosterAbsPath, err := filepath.Abs(rosterFile)
 	if err != nil {
 		panic(err)
 	}
