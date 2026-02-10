@@ -1,4 +1,4 @@
-// Package contains core structures, functions, ... etc
+// Package core contains core structures, functions, ... etc
 package core
 
 type Credentials struct {

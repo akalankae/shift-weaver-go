@@ -4,6 +4,7 @@ package tui
 import (
 	"fmt"
 	"path/filepath"
+	"sort"
 
 	"github.com/akalankae/shift-weaver-go/internal/core"
 	"github.com/akalankae/shift-weaver-go/internal/excel"
@@ -20,11 +21,11 @@ func Run() {
 
 	// Roster file
 	const DataDir string = "../data"
-	rosterFile, err := getRosterFile(DataDir)
+	rosterFileName, err := getRosterFile(DataDir)
 	if err != nil {
 		panic(err)
 	}
-	rosterAbsPath, err := filepath.Abs(rosterFile)
+	rosterAbsPath, err := filepath.Abs(rosterFileName)
 	if err != nil {
 		panic(err)
 	}
@@ -37,8 +38,23 @@ func Run() {
 	}
 	fmt.Printf("\nFound %d worksheets in %s\n", len(sheets), rosterAbsPath)
 
-	roster := selectRoster(sheets)
-	fmt.Println("You selected roster:", roster)
+	rosterName := selectRoster(sheets)
+	fmt.Println("You selected roster:", rosterName)
+
+	// Parse the selected roster and put all the shift data together
+	roster, err := excel.NewRoster(rosterAbsPath, rosterName)
+	if err != nil {
+		panic(err)
+	}
+	for emp, shifts := range roster {
+		fmt.Println(emp)
+		sort.Slice(shifts, func(i, j int) bool {
+			return shifts[i].Date.Before(shifts[j].Date)
+		})
+		for _, shift := range shifts {
+			fmt.Printf("%v : %s\n", shift.Date, shift.Label)
+		}
+	}
 }
 
 func getCredentials() (credentials core.Credentials) {
