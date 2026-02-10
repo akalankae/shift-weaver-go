@@ -4,6 +4,7 @@ package tui
 import (
 	"fmt"
 	"path/filepath"
+	"slices"
 	"sort"
 
 	"github.com/akalankae/shift-weaver-go/internal/core"
@@ -46,14 +47,22 @@ func Run() {
 	if err != nil {
 		panic(err)
 	}
-	for emp, shifts := range roster {
-		fmt.Println(emp)
-		sort.Slice(shifts, func(i, j int) bool {
-			return shifts[i].Date.Before(shifts[j].Date)
-		})
-		for _, shift := range shifts {
-			fmt.Printf("%v : %s\n", shift.Date, shift.Label)
-		}
+	names := make([]string, 0, len(roster))
+	for name := range roster {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	name, err := selectEmployee(names)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Roster for", name)
+	shifts := roster[name]
+	sort.Slice(shifts, func(i, j int) bool {
+		return shifts[i].Date.Before(shifts[j].Date)
+	})
+	for _, shift := range shifts {
+		fmt.Printf("%v: %s\n", shift.Date, shift.Label)
 	}
 }
 
@@ -114,4 +123,27 @@ func selectRoster(rosters []string) string {
 		}
 		fmt.Printf("Please enter a file number between 0 and %d\n", len(rosters))
 	}
+}
+
+func selectEmployee(names []string) (string, error) {
+	var index int
+	sortedNames := slices.Clone(names)
+	for {
+		for i, name := range sortedNames {
+			fmt.Printf("  (%3d) %s\n", i+1, name)
+		}
+		fmt.Println("Pick the number for the name you want to see. Enter non-number to exit.\n>> ")
+		n, err := fmt.Scanf("%d", &index)
+		if err != nil {
+			return "", err
+		}
+		if n != 1 {
+			return "", fmt.Errorf("invalid input")
+		}
+		if (index-1) > 0 && index <= len(names) {
+			break
+		}
+		fmt.Printf("Invalid input: %d\n", index)
+	}
+	return sortedNames[index-1], nil
 }
